@@ -32,7 +32,7 @@ spec:
               command:
                 - sh
                 - -c
-                - '[ -d "/decrypted/mnt" ] && mountpoint -q /decrypted/mnt'
+                - '[ -d "/decrypted" ] && mountpoint -q /decrypted'
             initialDelaySeconds: 1
             periodSeconds: 1
             failureThreshold: 30
@@ -44,9 +44,9 @@ spec:
                   key: password
           volumeMounts:
             - name: encrypted-volume
-              mountPath: /encrypted/mnt
+              mountPath: /encrypted
             - name: decrypted-volume
-              mountPath: /decrypted/mnt
+              mountPath: /decrypted
               mountPropagation: Bidirectional
 
       containers:

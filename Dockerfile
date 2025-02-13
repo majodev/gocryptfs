@@ -16,6 +16,8 @@ FROM alpine:latest
 
 ENV MOUNT_OPTIONS="-allow_other -nosyslog"
 ENV UNMOUNT_OPTIONS="-u -z"
+ENV ENC_PATH="/encrypted"
+ENV DEC_PATH="/decrypted"
 
 COPY --from=builder /bin/gocryptfs /usr/local/bin/gocryptfs
 RUN apk --no-cache add fuse bash openssl-dev

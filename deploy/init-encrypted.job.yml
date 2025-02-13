@@ -12,11 +12,6 @@ spec:
         app: init-encrypted
     spec:
       restartPolicy: OnFailure
-      volumes:
-        - name: encrypted-volume
-          hostPath:
-            path: /tmp/encrypted-data
-            type: DirectoryOrCreate
       containers:
         - name: init-encrypted
           image: ghcr.io/majodev/gocryptfs:<tag>
@@ -34,8 +29,13 @@ spec:
           command:
             - /bin/sh
             - -c
-            - gocryptfs -init -allow_other -nosyslog -fg -extpass 'printenv PASSWD' /encrypted/mnt
-
+            - gocryptfs -init -allow_other -nosyslog -fg -extpass 'printenv PASSWD' /encrypted
           volumeMounts:
             - name: encrypted-volume
-              mountPath: /encrypted/mnt
+              mountPath: /encrypted
+
+      volumes:
+        - name: encrypted-volume
+          hostPath:
+            path: /tmp/encrypted-data
+            type: DirectoryOrCreate
