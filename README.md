@@ -4,7 +4,25 @@ Mounts a [rfjakob/gocryptfs](https://github.com/rfjakob/gocryptfs) `$PASSWD` enc
 
 ## Usage with Kubernetes
 
-See [`./deploy`](./deploy) folder for a sample setup.
+```bash
+git clone https://github.com/majodev/gocryptfs.git
+cd gocryptfs/deploy
+
+# Set up a sample namespace...
+kubectl apply -f namespace.yml
+
+# Ensure to change the secret within
+kubectl apply -f secret.yml
+
+# Initialize the encrypted folder
+kubectl apply -f init-encrypted.job.yml
+
+# Start an application utilizing the encrypted folder
+kubectl apply -f runner.deployment.yml
+
+# ensure to save the config file (holding the masterkey!) locally so you have it in case of file corruption!
+kubectl cp <runner-pod>:/encrypted/mnt/gocryptfs.conf ./gocryptfs.conf -c mounter
+```
 
 ## Usage with Docker
 
@@ -19,7 +37,7 @@ docker run -it \
   --device /dev/fuse \
   -e PASSWD=$PASSWD \
   -v ./.encrypted:/encrypted \
-  ghcr.io/majodev/gocryptfs:<tag> sh
+  ghcr.io/majodev/gocryptfs sh
 
 # initialize the encrypted folder inside the container
 gocryptfs -init -allow_other -nosyslog -fg -extpass 'printenv PASSWD' /encrypted
@@ -32,7 +50,7 @@ docker run -d \
   --device /dev/fuse \
   -e PASSWD=$PASSWD \
   -v ./.encrypted:/encrypted \
-  ghcr.io/majodev/gocryptfs:<tag>
+  ghcr.io/majodev/gocryptfs
 
 docker ps
 docker exec -it <container-id> sh

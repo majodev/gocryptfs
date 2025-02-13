@@ -14,7 +14,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: init-encrypted
-          image: ghcr.io/majodev/gocryptfs:<tag>
+          image: ghcr.io/majodev/gocryptfs
           securityContext:
             privileged: true
             capabilities:

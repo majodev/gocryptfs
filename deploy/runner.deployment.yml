@@ -20,7 +20,7 @@ spec:
       terminationGracePeriodSeconds: 5
       initContainers:
         - name: mounter
-          image: ghcr.io/majodev/gocryptfs:<tag>
+          image: ghcr.io/majodev/gocryptfs
           restartPolicy: Always # native sidecar container pattern
           securityContext:
             privileged: true
