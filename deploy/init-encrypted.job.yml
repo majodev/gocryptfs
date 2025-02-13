@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-encrypted
+  namespace: gocryptfs-test
+  labels:
+    app: init-encrypted
+spec:
+  template:
+    metadata:
+      labels:
+        app: init-encrypted
+    spec:
+      restartPolicy: OnFailure
+      volumes:
+        - name: encrypted-volume
+          hostPath:
+            path: /tmp/encrypted-data
+            type: DirectoryOrCreate
+      containers:
+        - name: init-encrypted
+          image: ghcr.io/majodev/gocryptfs:<tag>
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+          env:
+            - name: PASSWD
+              valueFrom:
+                secretKeyRef:
+                  name: gocryptfs-secret
+                  key: password
+          command:
+            - /bin/sh
+            - -c
+            - gocryptfs -init -allow_other -nosyslog -fg -extpass 'printenv PASSWD' /encrypted/mnt
+
+          volumeMounts:
+            - name: encrypted-volume
+              mountPath: /encrypted/mnt

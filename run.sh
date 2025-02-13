@@ -24,7 +24,7 @@ function fuse_unmount {
   DEC_FOLDERS=`find ${DEC_PATH} ! -path ${DEC_PATH} -maxdepth 1 -type d`
 
   for DEC_FOLDER in $DEC_FOLDERS; do
-    echo "Unmounting: fusermount $UNMOUNT_OPTIONS $DEC_FOLDER at: $(date +%Y.%m.%d-%T)"
+    echo "Unmounting: 'fusermount $UNMOUNT_OPTIONS $DEC_FOLDER' at: $(date +%Y.%m.%d-%T)"
     fusermount $UNMOUNT_OPTIONS $DEC_FOLDER
     rmdir $DEC_FOLDER
   done

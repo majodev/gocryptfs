@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner
+  namespace: gocryptfs-test
+  labels:
+    app: runner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: runner
+  template:
+    metadata:
+      labels:
+        app: runner
+    spec:
+      terminationGracePeriodSeconds: 5
+      initContainers:
+        - name: mounter
+          image: ghcr.io/majodev/gocryptfs:<tag>
+          restartPolicy: Always # native sidecar container pattern
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - '[ -d "/decrypted/mnt" ] && mountpoint -q /decrypted/mnt'
+            initialDelaySeconds: 1
+            periodSeconds: 1
+            failureThreshold: 30
+          env:
+            - name: PASSWD
+              valueFrom:
+                secretKeyRef:
+                  name: gocryptfs-secret
+                  key: password
+          volumeMounts:
+            - name: encrypted-volume
+              mountPath: /encrypted/mnt
+            - name: decrypted-volume
+              mountPath: /decrypted/mnt
+              mountPropagation: Bidirectional
+
+      containers:
+        - name: writer
+          image: alpine:latest
+          command: 
+            - /bin/sh
+            - -c
+            - |
+              while true; do
+                echo "Writing $(date)..."
+                echo "Timestamp: $(date)" >> /data/timestamps.log
+                sleep 10
+              done
+          volumeMounts:
+            - name: decrypted-volume
+              mountPath: /data
+
+        - name: debian
+          image: debian:bullseye
+          command: ["/bin/sh"]
+          args: ["-c", "touch /app/cnt && apt-get update && apt-get install -y lockfile-progs && echo 'starting...' && while true; do lockfile-create /app/cnt && n=$(cat /app/cnt) && m=$(( n + 1 )) && echo $m > /app/cnt && echo \"$(date) $m\" && lockfile-remove /app/cnt; sleep 0.25; done"]
+          volumeMounts:
+            - mountPath: "/app"
+              name: decrypted-volume
+
+      volumes:
+        - name: encrypted-volume
+          hostPath:
+            path: /tmp/encrypted-data
+            type: DirectoryOrCreate
+        - name: decrypted-volume
+          emptyDir: {}
