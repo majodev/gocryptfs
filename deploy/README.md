@@ -11,5 +11,5 @@ kubectl apply -f init-encrypted.job.yml
 kubectl apply -f runner.deployment.yml
 
 # ensure to save the config file (holding the masterkey!) locally so you have it in case of corruption!
-k cp <runner-pod>:/encrypted/test/gocryptfs.conf ./gocryptfs.conf -c mounter
+k cp <runner-pod>:/encrypted/mnt/gocryptfs.conf ./gocryptfs.conf -c mounter
 ```
