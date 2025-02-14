@@ -78,5 +78,18 @@ spec:
           hostPath:
             path: /tmp/encrypted-data
             type: DirectoryOrCreate
-        - name: decrypted-volume
-          emptyDir: {}
+  
+        # - name: decrypted-volume
+        #   emptyDir: {}
+
+        # Must use hostPath instead of emptyDir if you use SELinux (you cannot perform a relabel on a mounted fuse on a tmpfs emptyDir).
+        # Otherwise you will get an error like:
+        # Error: failed to generate container "456992c9e13a0daa6d09ecd836258885ee9a6178cebe6a32bf41f0bdf10850de" spec: 
+        # failed to generate spec: relabel "/var/lib/kubelet/pods/94884fa0-861b-49ad-b1ac-f8631bf5ef43/volumes/kubernetes.io~empty-dir/decrypted-volume" 
+        # with "system_u:object_r:container_file_t:s0:c123,c456" failed: lsetxattr /var/lib/kubelet/pods/94884fa0-861b-49ad-b1ac-f8631bf5ef43/volumes/kubernetes.io~empty-dir/decrypted-volume: operation not supported
+        # via https://github.com/kubernetes/kubernetes/issues/69799:
+        # (Note for-real host-path k8s volumes already disable relabelling because we don't want to mess with the host's filesystem). 
+        # https://github.com/kubernetes/kubernetes/blob/8288d32a393394d716e04046a47e77fb1ac50ba0/pkg/volume/host_path/host_path.go#L209
+        - hostPath: 
+            path: /tmp/some-unique-path
+            type: DirectoryOrCreate
